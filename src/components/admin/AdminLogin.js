@@ -9,9 +9,8 @@ export const AdminLogin = (props) => {
       credentials.email === "admin@gmail.com" &&
       credentials.password === "admin"
     ) {
-      navigate("/admin");
+      navigate("/admin/dashboard"); // Chuyển hướng đến Admin Dashboard
     } else {
-      navigate("/admin/login");
       setCredentials({ email: "", password: "" });
       alert("Enter correct credentials to Login !");
     }

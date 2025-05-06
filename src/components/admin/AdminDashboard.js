@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
 export const AdminDashboard = () => {
   const [doctors, setDoctors] = useState([]);
@@ -25,13 +24,15 @@ export const AdminDashboard = () => {
   }, []);
 
   const fetchDoctors = async () => {
-    const response = await axios.get(`${apiHost}/doctor/getalldoctors`);
-    setDoctors(response.data);
+    const response = await fetch(`${apiHost}/doctor/getalldoctors`);
+    const data = await response.json();
+    setDoctors(data);
   };
 
   const fetchPharmacists = async () => {
-    const response = await axios.get(`${apiHost}/pharmacist/getallpharmacists`);
-    setPharmacists(response.data);
+    const response = await fetch(`${apiHost}/pharmacist/getallpharmacists`);
+    const data = await response.json();
+    setPharmacists(data);
   };
 
   const handleInputChange = (e) => {
@@ -39,7 +40,13 @@ export const AdminDashboard = () => {
   };
 
   const handleAddDoctor = async () => {
-    await axios.post(`${apiHost}/doctor/createdoctor`, formData);
+    await fetch(`${apiHost}/doctor/createdoctor`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
     fetchDoctors();
     setFormData({
       name: "",
@@ -53,7 +60,13 @@ export const AdminDashboard = () => {
   };
 
   const handleAddPharmacist = async () => {
-    await axios.post(`${apiHost}/pharmacist/createpharmacist`, formData);
+    await fetch(`${apiHost}/pharmacist/createpharmacist`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
     fetchPharmacists();
     setFormData({
       name: "",
@@ -72,16 +85,25 @@ export const AdminDashboard = () => {
   };
 
   const handleUpdate = async (type) => {
+    const endpoint =
+      type === "doctor"
+        ? `${apiHost}/doctor/updatedoctor/${editId}`
+        : `${apiHost}/pharmacist/updatepharmacist/${editId}`;
+
+    await fetch(endpoint, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
     if (type === "doctor") {
-      await axios.put(`${apiHost}/doctor/updatedoctor/${editId}`, formData);
       fetchDoctors();
     } else {
-      await axios.put(
-        `${apiHost}/pharmacist/updatepharmacist/${editId}`,
-        formData
-      );
       fetchPharmacists();
     }
+
     setIsEditing(false);
     setEditId(null);
     setFormData({
@@ -96,11 +118,18 @@ export const AdminDashboard = () => {
   };
 
   const handleDelete = async (id, type) => {
+    const endpoint =
+      type === "doctor"
+        ? `${apiHost}/doctor/deletedoctor/${id}`
+        : `${apiHost}/pharmacist/deletepharmacist/${id}`;
+
+    await fetch(endpoint, {
+      method: "DELETE",
+    });
+
     if (type === "doctor") {
-      await axios.delete(`${apiHost}/doctor/deletedoctor/${id}`);
       fetchDoctors();
     } else {
-      await axios.delete(`${apiHost}/pharmacist/deletepharmacist/${id}`);
       fetchPharmacists();
     }
   };

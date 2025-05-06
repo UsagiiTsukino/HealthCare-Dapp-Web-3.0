@@ -1,8 +1,9 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import userContext from "../../context/users/userContext";
 import Web3 from "web3";
+
 export const BookAppointment = (props) => {
   const [details, setDetails] = useState({
     doctorId: "",
@@ -16,15 +17,22 @@ export const BookAppointment = (props) => {
   const [Tommorowdate, setTommorowDate] = useState();
   const context = useContext(userContext);
   const contract = props.contract;
-  let web3 = window.web3;
+  const web3Ref = useRef(null); // Sử dụng useRef để lưu trữ web3
   const ethereum = window.ethereum;
   const [account, setacc] = useState([]);
 
-  const { bookAppointment,getUser } = context;
+  const { getUser } = context; // Xóa `bookAppointment` nếu không sử dụng
+
   useEffect(() => {
     async function loadBlockchainData() {
-      web3 = new Web3(ethereum);
-      let x = await web3.eth.getAccounts();
+      web3Ref.current = new Web3(ethereum); // Lưu giá trị vào useRef
+      let x = await web3Ref.current.eth.getAccounts();
+      // const balance = await web3Ref.current.eth.getBalance(x[0]);
+      // console.log(
+      //   "Số dư tài khoản:",
+      //   web3Ref.current.utils.fromWei(balance, "ether"),
+      //   "ETH"
+      // );
       setacc(x);
     }
     async function getAllDoctors() {
@@ -43,8 +51,6 @@ export const BookAppointment = (props) => {
         const user = await getUser(localStorage.getItem("token"));
         if (user._id) {
           details.patientName = user.name;
-          //details.doctorId = value from dropdown
-          //details.doctorName = doctor name from db
         } else {
           console.log("Auth token not found");
         }
@@ -65,54 +71,53 @@ export const BookAppointment = (props) => {
     loadBlockchainData();
     getAllDoctors();
     getAppointmentDetails();
-  }, []);
+  }, [details, ethereum, getUser]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
-
+    const gasPrice = await web3Ref.current.eth.getGasPrice();
+    console.log("Current Gas Price (wei):", gasPrice);
+    console.log(
+      "Current Gas Price (gwei):",
+      web3Ref.current.utils.fromWei(gasPrice, "gwei")
+    );
     let isSubmit = true;
-    console.log(details)
 
-    /*const isDateValid = dateValidation();
-
-    if (!isDateValid) {
-      alert("Date cannot be in the past.");
-      isSubmit = false;
-    }*/
-    // bookAppointment(details.patientName,details.doctorName, details.slotNo, details.date);
-    if (isSubmit && details.slotNo!=="0") {
+    if (isSubmit && details.slotNo !== "0") {
       details.date = Tommorowdate;
       try {
-        const user = await getUser(localStorage.getItem('token'))
-        const hash = await contract.methods
+        const user = await getUser(localStorage.getItem("token"));
+
+        await contract.methods
           .addToBlockchain(
             user.name,
-            doctors[parseInt(details.doctorId)-1].name,
+            doctors[parseInt(details.doctorId) - 1].name,
             parseInt(details.doctorId),
             details.slotNo,
+
             Tommorowdate
           )
-          .send({ from: account[0] });
+          .send({
+            from: account[0],
+            gas: 5000000,
+            gasPrice: web3Ref.current.utils.toWei("1", "gwei"),
+          })
+          .then((result) => {
+            console.log("Transaction successful:", result);
+          });
         alert("Appointment booked successfully !");
       } catch (error) {
-        alert("Slot already filled");
+        console.log(error);
       }
-    }
-    else{
-      alert("Choose Slot Number!")
+    } else {
+      alert("Choose Slot Number!");
     }
   };
+
   const onChange = (e) => {
     setDetails({ ...details, [e.target.name]: e.target.value });
-    console.log(details)
   };
-  /*const dateValidation = () => {
-    var now = new Date();
-    if (details.date == now.toJSON().slice(0, 10) + 1) {
-      return false;
-    }
-    return true;
-  };*/
+
   return (
     <>
       <div style={{ display: "flex", flexDirection: "row" }}>
@@ -138,13 +143,14 @@ export const BookAppointment = (props) => {
                   name="doctorId"
                   value={details.doctorId}
                 >
-                  <option >Choose doctor id</option>
-                  {doctors.map((ele,i)=>{
-                    return(
-                      <option key={i} value={i+1}>{i+1}</option>
-                    )
+                  <option>Choose doctor id</option>
+                  {doctors.map((ele, i) => {
+                    return (
+                      <option key={i} value={i + 1}>
+                        {i + 1}
+                      </option>
+                    );
                   })}
-                  
                 </Form.Control>
               </div>
               <div style={{ marginRight: "30px" }}>
@@ -156,40 +162,25 @@ export const BookAppointment = (props) => {
                   name="slotNo"
                   value={details.slotNo}
                 >
-                  <option >Choose Slot Number</option>
-                  <option key={1} value="1">1</option>
-                  <option key={2} value="2">2</option>
-                  <option key={3} value="3">3</option>
-                  <option key={4} value="4">4</option>
-                  <option key={5} value="5">5</option>
-                  
+                  <option>Choose Slot Number</option>
+                  <option key={1} value="1">
+                    1
+                  </option>
+                  <option key={2} value="2">
+                    2
+                  </option>
+                  <option key={3} value="3">
+                    3
+                  </option>
+                  <option key={4} value="4">
+                    4
+                  </option>
+                  <option key={5} value="5">
+                    5
+                  </option>
                 </Form.Control>
               </div>
             </Form.Group>
-            <Form.Group
-              style={{ display: "flex", flexDirection: "row" }}
-              className="mb-3"
-              controlId="doctor_patient_Details"
-            >
-            </Form.Group>
-            {/* <Form.Group
-              style={{ display: "flex", flexDirection: "row" }}
-              className="mb-3"
-              controlId="slotDetails"
-            >
-            <div style={{display:"flex",flexDirection:"column",marginRight:"30px"}}>
-            <div>
-                <Form.Label>Patient Id</Form.Label>
-                <Form.Control
-                  onChange={onChange}
-                  type="text"
-                  placeholder="Enter id"
-                  name="patientId"
-                  value={details.patientId}
-                />
-              </div>
-            </div>
-            </Form.Group> */}
             <div style={{ marginRight: "30px" }}>
               <Button variant="primary" type="submit">
                 Submit
