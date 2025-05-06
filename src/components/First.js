@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+// import { Link, useLocation } from "react-router-dom";
 import Button from "react-bootstrap/Button";
 import { useNavigate } from "react-router-dom";
 const Logo = require("./sastra_logo.png");
@@ -33,6 +33,7 @@ export const First = () => {
             height: "100px",
             marginBottom: "50px",
           }}
+          alt="Logo"
         />
         <h1
           style={{
@@ -122,11 +123,11 @@ export const First = () => {
             }}
           >
             <b>
-            Developed by
-            <br />
-            Inti Dhiraj
-            <br />
-            Dhavala Sai Sri Mahita
+              Developed by
+              <br />
+              Trung Hieu
+              <br />
+              Trung Hieu Nguyen
             </b>
           </h6>
         </div>

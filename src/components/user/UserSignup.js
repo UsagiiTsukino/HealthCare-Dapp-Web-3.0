@@ -18,20 +18,18 @@ export const UserSignup = (props) => {
   });
   useEffect(() => {
     async function init() {
-
-      if (localStorage.getItem('token')) {
-        const user = await getUser(localStorage.getItem('token'));
+      if (localStorage.getItem("token")) {
+        const user = await getUser(localStorage.getItem("token"));
         if (user._id) {
           navigate("/user");
-        }
-        else {
+        } else {
           navigate("/user/signup");
         }
       }
     }
 
     init();
-  }, [])
+  }, [getUser, navigate]);
   const onChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
@@ -46,10 +44,12 @@ export const UserSignup = (props) => {
     e.preventDefault();
     let isSubmit = true;
     //password and confirm password fields should match
-    if (credentials.password === credentials.confirmPassword && credentials.password.length >= 5) {
+    if (
+      credentials.password === credentials.confirmPassword &&
+      credentials.password.length >= 5
+    ) {
       isSubmit = true;
-    }
-    else {
+    } else {
       alert("Passwords not matching.");
       isSubmit = false;
     }
@@ -62,28 +62,43 @@ export const UserSignup = (props) => {
     const isDateValid = dateValidation();
     if (!isDateValid) {
       isSubmit = false;
-      alert("Date of birth cannot be in the future.")
+      alert("Date of birth cannot be in the future.");
     }
     //phone number must have exactly 10 digits
     if (credentials.phoneNumber.length !== 10) {
       isSubmit = false;
-      alert("Phone number must have exactly 10 digits.")
+      alert("Phone number must have exactly 10 digits.");
     }
     if (isSubmit) {
       //preprocess name
       const filename = credentials.name.replaceAll(" ", "_");
-      const response1 = await getIpfsPath(credentials.name, filename, credentials.chronicConditions, credentials.medicalAllergies);
-      const path = response1[0].path
-      if (response1[0].path) {
-        const response2 = await signup(credentials.name, credentials.email, credentials.password, credentials.dob, credentials.address, credentials.phoneNumber, path);
+      const response1 = await getIpfsPath(
+        credentials.name,
+        filename,
+        credentials.chronicConditions,
+        credentials.medicalAllergies
+      );
+
+      const path = response1["/"];
+      console.log(path);
+
+      if (path) {
+        const response2 = await signup(
+          credentials.name,
+          credentials.email,
+          credentials.password,
+          credentials.dob,
+          credentials.address,
+          credentials.phoneNumber,
+          path
+        );
         if (response2.success) {
-          localStorage.setItem('token', response2.authtoken)
+          localStorage.setItem("token", response2.authtoken);
           navigate("/user/login");
         }
       }
-    }
-    else {
-      navigate("/user/signup")
+    } else {
+      navigate("/user/signup");
     }
   };
   return (

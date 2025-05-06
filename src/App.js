@@ -8,10 +8,11 @@ import AppointmentsDetail from "./components/user/AppointmentsDetail";
 import { DrugInventoryDetail } from "./components/pharmacist/DrugInventoryDetail";
 import { Navbar } from "./components/Navbar";
 import { First } from "./components/First";
-import { UserSignup } from "./components/user/UserSignup"
+import { UserSignup } from "./components/user/UserSignup";
 import { UserLogin } from "./components/user/UserLogin";
 import { PharmaLogin } from "./components/pharmacist/PharmaLogin";
 import { AdminLogin } from "./components/admin/AdminLogin";
+import { AdminDashboard } from "./components/admin/AdminDashboard";
 //import { AdminHome } from "./components/home/AdminHome";
 import { Home } from "./components/home/Home.js";
 import { BookAppointment } from "./components/user/BookAppointment";
@@ -59,10 +60,10 @@ function App() {
 
         setDIContract(d_contract);
         const resp = await t_contract.methods.getAllAppointments().call();
-        setResp(resp)
+        setResp(resp);
 
-        const resp2 = await d_contract.methods.getAllReceipts().call()
-        setDrugRes(resp2)
+        const resp2 = await d_contract.methods.getAllReceipts().call();
+        setDrugRes(resp2);
       } else if (web3) {
         web3 = new Web3(web3.currentProvider);
       } else {
@@ -84,7 +85,18 @@ function App() {
             <div className="container">
               <Routes>
                 <Route exact path="/" element={<First />} />
-                <Route exact path="/user" element={<Home type="user" s1="Book an Appointment" s2="View Appointments for the day" s3="View your Account Details" />} />
+                <Route
+                  exact
+                  path="/user"
+                  element={
+                    <Home
+                      type="user"
+                      s1="Book an Appointment"
+                      s2="View Appointments for the day"
+                      s3="View your Account Details"
+                    />
+                  }
+                />
 
                 <Route
                   exact
@@ -104,22 +116,40 @@ function App() {
                 <Route
                   exact
                   path="user/bookappointment"
-                  element={<BookAppointment contract={contract} account={account} />}
+                  element={
+                    <BookAppointment contract={contract} account={account} />
+                  }
                 />
                 <Route
-                  exact path="user/viewbyrfid"
-                  element={<SearchByRfid contract={DIContract}/>}
-                 /> 
+                  exact
+                  path="user/viewbyrfid"
+                  element={<SearchByRfid contract={DIContract} />}
+                />
                 <Route
                   exact
                   path="user/accdetails"
                   element={<AccountDetails type="user" />}
                 />
 
-                <Route exact path="/pharma" element={<Home type="pharma" s1="Create and Add Receipts to Sell Medicines" s2="View Drug Inventory" s3="View your Account Details
-"/>} />
+                <Route
+                  exact
+                  path="/pharma"
+                  element={
+                    <Home
+                      type="pharma"
+                      s1="Create and Add Receipts to Sell Medicines"
+                      s2="View Drug Inventory"
+                      s3="View your Account Details
+"
+                    />
+                  }
+                />
 
-                <Route exact path="pharma/login" element={<PharmaLogin name="Pharmacist" />} />
+                <Route
+                  exact
+                  path="pharma/login"
+                  element={<PharmaLogin name="Pharmacist" />}
+                />
 
                 <Route
                   exact
@@ -127,13 +157,16 @@ function App() {
                   element={<DrugInventoryDetail contract={DIContract} />}
                 />
                 <Route
-                  exact path="pharma/viewmed"
+                  exact
+                  path="pharma/viewmed"
                   element={<MedicineDetail contract={DIContract} />}
                 />
                 <Route
                   exact
                   path="pharma/sellmedicine"
-                  element={<SellMedicine contract={DIContract} account={account} />}
+                  element={
+                    <SellMedicine contract={DIContract} account={account} />
+                  }
                 />
                 <Route
                   exact
@@ -141,12 +174,34 @@ function App() {
                   element={<AccountDetails type="pharmacist" />}
                 />
 
-                <Route exact path="admin" element={<Home type="admin" s1="View Appointments for the day" s2="View Drug Inventory" s3="View your Account Details" />} />
-                <Route exact path="admin/login" element={<AdminLogin name="Admin" />} />
+                <Route
+                  exact
+                  path="admin"
+                  element={
+                    <Home
+                      type="admin"
+                      s1="View Appointments for the day"
+                      s2="View Drug Inventory"
+                      s3="View your Account Details"
+                    />
+                  }
+                />
+                <Route
+                  exact
+                  path="admin/login"
+                  element={<AdminLogin name="Admin" />}
+                />
+                <Route
+                  exact
+                  path="/admin/dashboard"
+                  element={<AdminDashboard />}
+                />
                 <Route
                   exact
                   path="admin/appointments"
-                  element={<AppointmentsDetail type="admin" contract={contract} />}
+                  element={
+                    <AppointmentsDetail type="admin" contract={contract} />
+                  }
                 />
                 <Route
                   exact

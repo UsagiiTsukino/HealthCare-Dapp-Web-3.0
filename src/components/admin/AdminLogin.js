@@ -5,30 +5,28 @@ export const AdminLogin = (props) => {
   const navigate = useNavigate();
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (credentials.email === "admin@healthcaredapp.com" && credentials.password === "dappassword") {
-      navigate('/admin');
+    if (
+      credentials.email === "admin@gmail.com" &&
+      credentials.password === "admin"
+    ) {
+      navigate("/admin");
+    } else {
+      navigate("/admin/login");
+      setCredentials({ email: "", password: "" });
+      alert("Enter correct credentials to Login !");
     }
-    else {
-      navigate('/admin/login');
-      setCredentials({ email: "", password: "" })
-      alert("Enter correct credentials to Login !")
-    }
-  }
+  };
 
   const onChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
-
 
   return (
     <>
       <h2 style={{ justifyContent: "center", display: "flex" }}>
         Welcome, {props.name}
       </h2>
-      <form
-        style={{ position: "absolute", left: "40%" }}
-        onSubmit={onSubmit}
-      >
+      <form style={{ position: "absolute", left: "40%" }} onSubmit={onSubmit}>
         <div className="mb-3">
           <label htmlFor="exampleInputEmail1" className="form-label">
             Email address
