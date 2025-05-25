@@ -75,39 +75,82 @@ export const BookAppointment = (props) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const gasPrice = await web3Ref.current.eth.getGasPrice();
-    console.log("Current Gas Price (wei):", gasPrice);
-    console.log(
-      "Current Gas Price (gwei):",
-      web3Ref.current.utils.fromWei(gasPrice, "gwei")
-    );
-    let isSubmit = true;
 
-    if (isSubmit && details.slotNo !== "0") {
+    if (details.slotNo !== "0") {
       details.date = Tommorowdate;
+
       try {
         const user = await getUser(localStorage.getItem("token"));
 
-        await contract.methods
+        // Gửi giao dịch blockchain
+        const result = await contract.methods
           .addToBlockchain(
             user.name,
             doctors[parseInt(details.doctorId) - 1].name,
             parseInt(details.doctorId),
             details.slotNo,
-
             Tommorowdate
           )
           .send({
             from: account[0],
             gas: 5000000,
             gasPrice: web3Ref.current.utils.toWei("1", "gwei"),
-          })
-          .then((result) => {
-            console.log("Transaction successful:", result);
           });
-        alert("Appointment booked successfully !");
+
+        console.log("Transaction successful:", result);
+
+        // Gọi API backend để lưu lịch hẹn
+        const response = await fetch(
+          "http://localhost:5000/api/appointment/user/bookappointment",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "auth-token": localStorage.getItem("token"), // Gửi token để xác thực
+            },
+            body: JSON.stringify({
+              patientName: user.name,
+              doctorId: parseInt(details.doctorId),
+              doctorName: doctors[parseInt(details.doctorId) - 1].name,
+              slotNo: details.slotNo,
+              date: Tommorowdate,
+            }),
+          }
+        );
+
+        const appointmentData = await response.json();
+
+        if (appointmentData.success) {
+          console.log("Appointment saved successfully!");
+
+          // Gọi API backend để lưu transaction hash
+          const transactionResponse = await fetch(
+            "http://localhost:5000/api/appointment/user/addtransaction",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "auth-token": localStorage.getItem("token"), // Gửi token để xác thực
+              },
+              body: JSON.stringify({
+                transaction: result.transactionHash,
+              }),
+            }
+          );
+
+          const transactionData = await transactionResponse.json();
+
+          if (transactionData.success) {
+            alert("Appointment and transaction hash saved successfully!");
+          } else {
+            alert("Failed to save transaction hash in backend.");
+          }
+        } else {
+          alert("Failed to save appointment in backend.");
+        }
       } catch (error) {
-        console.log(error);
+        console.error("Error during transaction or saving appointment:", error);
+        alert("Transaction failed or could not save appointment.");
       }
     } else {
       alert("Choose Slot Number!");
